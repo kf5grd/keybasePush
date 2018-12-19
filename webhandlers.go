@@ -25,7 +25,23 @@ func MessageIndex(w http.ResponseWriter, r *http.Request) {
 func MessageShow(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	messageId := vars["messageId"]
-	fmt.Fprintln(w, "Message show:", messageId)
+	var message Message
+	message = RepoFindMessage(messageId)
+
+	if message.Id == "" {
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(http.StatusNoContent)
+		if err := json.NewEncoder(w).Encode(""); err != nil {
+			panic(err)
+		}
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(message); err != nil {
+		panic(err)
+	}
 }
 
 func MessageCreate(w http.ResponseWriter, r *http.Request) {
