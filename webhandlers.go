@@ -30,8 +30,9 @@ func MessageShow(w http.ResponseWriter, r *http.Request) {
 
 	if message.Id == "" {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(404) // Not found
 		w.WriteHeader(http.StatusNoContent)
-		if err := json.NewEncoder(w).Encode(""); err != nil {
+		if err := json.NewEncoder(w).Encode(map[string]string{"error": "Message not found"}); err != nil {
 			panic(err)
 		}
 		return
