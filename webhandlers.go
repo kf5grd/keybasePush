@@ -70,6 +70,14 @@ func MessageCreate(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+
+	// Ack defaults to true
+	if message.Ack == nil {
+		t := new(bool)
+		*t = true
+		message.Ack = t
+	}
+
 	m := RepoCreateMessage(message)
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusCreated)
