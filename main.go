@@ -22,7 +22,6 @@ func init() {
 }
 
 func main() {
-	log.Println("Starting...")
 	if instanceName == "" {
 		fmt.Println("Error: Instance name is required.\n")
 		flag.PrintDefaults()
@@ -30,6 +29,7 @@ func main() {
 	}
 	router := NewRouter()
 
+	log.Println("Starting...")
 	serverAddress := fmt.Sprintf("%s:%d", serverHost, serverPort)
 	log.Fatal(http.ListenAndServe(serverAddress, router))
 }
