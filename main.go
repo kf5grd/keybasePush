@@ -29,7 +29,7 @@ func main() {
 	}
 	router := NewRouter()
 
-	log.Println("Starting...")
+	log.Printf("Starting with instance name '%s'...\n", instanceName)
 	serverAddress := fmt.Sprintf("%s:%d", serverHost, serverPort)
 	log.Fatal(http.ListenAndServe(serverAddress, router))
 }
