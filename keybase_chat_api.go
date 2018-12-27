@@ -82,3 +82,20 @@ func SendChatAPI(jsonData string) (chatAPIIn, error) {
 
 	return retVal, nil
 }
+
+func GetDevChannels() ([]string, error) {
+	jsonData := "{\"method\": \"list\", \"params\": {\"options\": {\"topic_type\": \"DEV\"}}}"
+	allChannels, err := SendChatAPI(jsonData)
+	if err != nil {
+		return []string{}, err
+	}
+
+	devChannels := []string{}
+	user := KeybaseUsername()
+	for _, channel := range allChannels.Result.Conversations {
+		if (channel.Channel.Name == user) && (channel.Channel.TopicType == "dev") {
+			devChannels = append(devChannels, channel.Channel.TopicName)
+		}
+	}
+	return devChannels, nil
+}
