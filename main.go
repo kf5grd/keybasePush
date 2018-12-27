@@ -22,6 +22,7 @@ func init() {
 }
 
 func main() {
+	log.Println("Starting...")
 	if instanceName == "" {
 		fmt.Println("Error: Instance name is required.\n")
 		flag.PrintDefaults()
