@@ -1,4 +1,4 @@
-package  main
+package main
 
 import (
 	"encoding/json"
@@ -16,9 +16,9 @@ func init() {
 }
 
 type keybaseStatus struct {
-	Username string `json:"Username"`
-	LoggedIn bool   `json:"LoggedIn"`
-	Device keybaseDevice `json:"Device"`
+	Username string        `json:"Username"`
+	LoggedIn bool          `json:"LoggedIn"`
+	Device   keybaseDevice `json:"Device"`
 }
 
 type keybaseDevice struct {
