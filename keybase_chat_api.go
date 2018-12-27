@@ -38,8 +38,9 @@ type chatAPIIn struct {
 }
 
 type chatInResult struct {
-	Message    string         `json:"message"`
-	RateLimits []chatInLimits `json:"ratelimits"`
+	Message       string               `json:"message"`
+	Conversations []chatInConversation `json:"conversations"`
+	RateLimits    []chatInLimits       `json:"ratelimits"`
 }
 
 type chatInLimits struct {
@@ -47,6 +48,16 @@ type chatInLimits struct {
 	Capacity int    `json:"capacity"`
 	Reset    int    `json:"reset"`
 	Gas      int    `json:"gas"`
+}
+
+type chatInConversation struct {
+	Channel conversationChannel `json:"channel"`
+}
+
+type conversationChannel struct {
+	Name      string `json:"name"`
+	TopicType string `json:"topic_type"`
+	TopicName string `json:"topic_name"`
 }
 
 type chatInError struct {
