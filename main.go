@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 )
 
 const (
@@ -24,6 +25,7 @@ func main() {
 	if instanceName == "" {
 		instanceName = KeybaseDeviceName()
 	}
+	instanceName = strings.ToLower(instanceName)
 	router := NewRouter()
 
 	log.Printf("Starting with instance name '%s'...\n", instanceName)
