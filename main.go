@@ -22,33 +22,39 @@ func init() {
 }
 
 func main() {
-	CreateMissingChannels()
 	if instanceName == "" {
 		instanceName = KeybaseDeviceName()
 	}
 	instanceName = strings.ToLower(instanceName)
+	instanceName = strings.TrimSpace(instanceName)
+	CreateMissingChannels(instanceName)
+
 	router := NewRouter()
 
-	log.Printf("Starting with instance name '%s'...\n", instanceName)
+	log.Printf("Starting with instance name '%s'\n", instanceName)
 	serverAddress := fmt.Sprintf("%s:%d", serverHost, serverPort)
 	log.Fatal(http.ListenAndServe(serverAddress, router))
 }
 
-func CreateMissingChannels() {
-	deviceName := KeybaseDeviceName()
-	neededChannels := []string{fmt.Sprintf("__%s_queue", deviceName), fmt.Sprintf("__%s_input", deviceName)}
+func CreateMissingChannels(instanceName string) {
+	// need queue and input channels
+	neededChannels := []string{
+		fmt.Sprintf("__%s_queue", instanceName),
+		fmt.Sprintf("__%s_input", instanceName),
+	}
+
+	// get existing dev channels
 	existingChannels := make(map[string]string)
 	for _, c := range GetDevChannels() {
 		existingChannels[c] = ""
 	}
 
+	// create any dev channel that's needed and doesn't exist yet
 	for _, devChan := range neededChannels {
 		if _, ok := existingChannels[devChan]; !ok {
-			fmt.Printf("Creating missing dev channel: %s... ", devChan)
+			log.Printf("Creating missing dev channel '%s'\n", devChan)
 			if err := CreateDevChannel(KeybaseUsername(), devChan); err != nil {
-				fmt.Printf("Error: %s\n", err)
-			} else {
-				fmt.Printf("Success!\n")
+				panic(err)
 			}
 		}
 	}
