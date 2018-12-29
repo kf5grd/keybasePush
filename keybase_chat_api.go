@@ -83,11 +83,11 @@ func SendChatAPI(jsonData string) (chatAPIIn, error) {
 	return retVal, nil
 }
 
-func GetDevChannels() ([]string, error) {
+func GetDevChannels() []string {
 	jsonData := "{\"method\": \"list\", \"params\": {\"options\": {\"topic_type\": \"DEV\"}}}"
 	allChannels, err := SendChatAPI(jsonData)
 	if err != nil {
-		return []string{}, err
+		panic(err)
 	}
 
 	devChannels := []string{}
@@ -97,7 +97,7 @@ func GetDevChannels() ([]string, error) {
 			devChannels = append(devChannels, channel.Channel.TopicName)
 		}
 	}
-	return devChannels, nil
+	return devChannels
 }
 
 func CreateDevChannel(user, channelName string) error {
