@@ -6,6 +6,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"strings"
 
 	"github.com/gorilla/mux"
 )
@@ -76,6 +77,11 @@ func MessageCreate(w http.ResponseWriter, r *http.Request) {
 		t := new(bool)
 		*t = true
 		message.Ack = t
+	}
+
+	// Force targets to lowercase
+	for i, target := range message.Targets {
+		message.Targets[i] = strings.ToLower(target)
 	}
 
 	m := RepoCreateMessage(message)
