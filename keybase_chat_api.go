@@ -99,3 +99,13 @@ func GetDevChannels() ([]string, error) {
 	}
 	return devChannels, nil
 }
+
+func CreateDevChannel(user, channelName string) error {
+	cmd := exec.Command("keybase", "chat", "send", "--topic-type", "dev", "--channel", channelName, user, "{\"create_channel\": true}")
+
+	_, err := cmd.Output()
+	if err != nil {
+		return err
+	}
+	return nil
+}
