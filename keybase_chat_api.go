@@ -26,6 +26,7 @@ type chatOutChannel struct {
 	Name        string `json:"name"`
 	MembersType string `json:"members_type,omitempty"`
 	TopicName   string `json:"topic_name,omitempty"`
+	TopicType   string `json:"topic_type,omitempty"`
 }
 
 type chatOutMessage struct {
@@ -71,7 +72,7 @@ func SendChatAPI(jsonData string) (chatAPIIn, error) {
 
 	cmdOut, err := cmd.Output()
 	if err != nil {
-		panic(err)
+		return chatAPIIn{}, err
 	}
 
 	var retVal chatAPIIn
@@ -82,6 +83,30 @@ func SendChatAPI(jsonData string) (chatAPIIn, error) {
 	}
 
 	return retVal, nil
+}
+
+func SendDevMessage(user, channelName, message string) error {
+	var msgJSON = chatAPIOut{
+		Method: "send",
+		Params: chatOutParams{
+			Options: chatOutOptions{
+				Channel: chatOutChannel{
+					Name:      user,
+					TopicName: channelName,
+					TopicType: "DEV",
+				},
+				Message: chatOutMessage{
+					Body: message,
+				},
+			},
+		},
+	}
+	jsonBytes, _ := json.Marshal(msgJSON)
+	_, err := SendChatAPI(string(jsonBytes))
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func GetDevChannels() []string {
