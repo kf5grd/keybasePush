@@ -90,6 +90,14 @@ func MessageCreate(w http.ResponseWriter, r *http.Request) {
 	jsonBytes, _ := json.Marshal(m)
 	if err := SendDevMessage(user, channel, string(jsonBytes)); err != nil {
 		// delete message
+		RepoDestroyMessage(m.Id)
+
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		w.WriteHeader(422)
+		if err := json.NewEncoder(w).Encode(map[string]string{"error": "Message not delivered"}); err != nil {
+			panic(err)
+		}
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
