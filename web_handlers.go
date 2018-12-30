@@ -83,6 +83,15 @@ func MessageCreate(w http.ResponseWriter, r *http.Request) {
 	message.Target = strings.ToLower(message.Target)
 
 	m := RepoCreateMessage(message)
+
+	// Send message to input channel for each target
+	user := KeybaseUsername()
+	channel := fmt.Sprintf("__%s_input", m.Target)
+	jsonBytes, _ := json.Marshal(m)
+	if err := SendDevMessage(user, channel, string(jsonBytes)); err != nil {
+		// delete message
+	}
+
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusCreated)
 	if err := json.NewEncoder(w).Encode(m); err != nil {
