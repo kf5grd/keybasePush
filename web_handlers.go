@@ -61,11 +61,11 @@ func MessageCreate(w http.ResponseWriter, r *http.Request) {
 			panic(err)
 		}
 	}
-	if message.Content == "" || len(message.Targets) == 0 {
+	if message.Content == "" || message.Target == "" {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		w.WriteHeader(422) // unprocessible entity
 
-		resp := map[string]string{"Error": "Targets and Content fields are required"}
+		resp := map[string]string{"Error": "'target' and 'content' fields are required"}
 		if err := json.NewEncoder(w).Encode(resp); err != nil {
 			panic(err)
 		}
@@ -79,10 +79,8 @@ func MessageCreate(w http.ResponseWriter, r *http.Request) {
 		message.Ack = t
 	}
 
-	// Force targets to lowercase
-	for i, target := range message.Targets {
-		message.Targets[i] = strings.ToLower(target)
-	}
+	// Force target to lowercase
+	message.Target = strings.ToLower(message.Target)
 
 	m := RepoCreateMessage(message)
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")

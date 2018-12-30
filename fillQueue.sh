@@ -2,6 +2,6 @@
 
 for i in {1..10}; do
     curl -H "Content-Type: application/json" \
-	 -d "{\"title\":\"message$i\",\"content\":\"asdf\",\"targets\":[\"Server\"]}" \
+	 -d "{\"title\":\"message$i\",\"content\":\"asdf\",\"target\":\"Server\"}" \
 	 http://localhost:8617/messages
 done
