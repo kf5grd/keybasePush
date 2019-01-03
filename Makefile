@@ -7,5 +7,8 @@ keybasePush : format \
 format :
 	@gofmt -d *.go
 	@gofmt -w *.go
+vet :
+	@go vet .
+check : format vet
 clean :
 	rm keybasePush
