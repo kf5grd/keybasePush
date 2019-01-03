@@ -9,33 +9,41 @@ import (
 )
 
 const (
+	// IP address to serve rest API on
 	serverHost string = "127.0.0.1"
 )
 
+// Initialize variables for flags
 var instanceName string
 var serverPort int
 
 func init() {
+	// Parse flags
 	flag.StringVar(&instanceName, "name", "", "Set the name of this instance")
 	flag.IntVar(&serverPort, "port", 8617, "Set the port for the API")
 	flag.Parse()
 }
 
 func main() {
+	// If -name flag isn't set, use device name from keybase
 	if instanceName == "" {
 		instanceName = KeybaseDeviceName()
 	}
+	// Instance name forced to lowercase with no leading or trailing spaces
 	instanceName = strings.ToLower(instanceName)
 	instanceName = strings.TrimSpace(instanceName)
+	// Create necessary dev channels on keybase if they're missing
 	CreateMissingChannels(instanceName)
 
+	// Create a new router and start the rest API service
 	router := NewRouter()
-
 	log.Printf("Starting with instance name '%s'\n", instanceName)
 	serverAddress := fmt.Sprintf("%s:%d", serverHost, serverPort)
 	log.Fatal(http.ListenAndServe(serverAddress, router))
 }
 
+// CreateMissingChannels will check if the queue and input 'dev' channels have
+// already been created on keybase, and if not, it will create them
 func CreateMissingChannels(instanceName string) {
 	// need queue and input channels
 	neededChannels := []string{
