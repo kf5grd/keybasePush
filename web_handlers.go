@@ -11,10 +11,20 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// Path: /
+// Method: GET
+// Purpose: Currently displays instance name
+// ToDo: Add some instructions for using the system. Maybe in the distant
+//       future this page can display a form for making some config changes.
 func Index(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Welcome to %s!", instanceName)
 }
 
+// Path: /messages
+// Method: GET
+// Purpose: Displays full message queue. This shouldn't be needed as the queue
+//          is tracked within keybase and external processes shouldn't need to
+//          access the queue.
 func MessageIndex(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
@@ -23,6 +33,11 @@ func MessageIndex(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Path: /messages/<messageId>
+// Method: GET
+// Purpose: Get an individual message from the queue. This shouldn't be needed as the queue
+//          is tracked within keybase and external processes shouldn't need to
+//          access the queue.
 func MessageShow(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	messageId := vars["messageId"]
@@ -45,6 +60,10 @@ func MessageShow(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Path: /messages
+// Method: POST
+// Purpose: Sends a JSON encoded Message object to target instance and adds
+//          message to queue.
 func MessageCreate(w http.ResponseWriter, r *http.Request) {
 	var message Message
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
