@@ -67,6 +67,7 @@ type chatInError struct {
 	Message string `json:"message"`
 }
 
+// Take JSON string as input and send it to the chat API via the Keybase CLI
 func SendChatAPI(jsonData string) (chatAPIIn, error) {
 	cmd := exec.Command("keybase", "chat", "api", "-m", jsonData)
 
@@ -85,6 +86,7 @@ func SendChatAPI(jsonData string) (chatAPIIn, error) {
 	return retVal, nil
 }
 
+// Send a message to a dev channel
 func SendDevMessage(user, channelName, message string) error {
 	var msgJSON = chatAPIOut{
 		Method: "send",
@@ -109,6 +111,7 @@ func SendDevMessage(user, channelName, message string) error {
 	return nil
 }
 
+// Return a slice containing all dev channels that the user is a member of
 func GetDevChannels() []string {
 	var msgJSON = chatAPIOut{
 		Method: "list",
@@ -135,6 +138,8 @@ func GetDevChannels() []string {
 	return devChannels
 }
 
+// Create a dev channel by sending a message to it. In the future this may be
+// changed to send the message with SendDevMessage()
 func CreateDevChannel(user, channelName string) error {
 	cmd := exec.Command("keybase", "chat", "send", "--topic-type", "dev", "--channel", channelName, user, "{\"create_channel\": true}")
 
