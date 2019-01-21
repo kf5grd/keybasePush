@@ -67,6 +67,46 @@ type chatInError struct {
 	Message string `json:"message"`
 }
 
+// JSON Received from api-listen command
+type listenAPI struct {
+	Type   string       `json:"type"`
+	Source string       `json:"source"`
+	Msg    listenAPIMsg `json:"msg"`
+}
+
+type listenAPIMsg struct {
+	Id       int              `json:"id"`
+	Channel  listenAPIChannel `json:"channel"`
+	Sender   listenAPISender  `json:"sender"`
+	SentAt   int              `json:"sent_at"`
+	SentAtMS int              `json:"sent_at_ms"`
+	Content  listenAPIContent `json:"content"`
+}
+
+type listenAPIChannel struct {
+	Name        string `json:"name"`
+	Public      bool   `json:"public"`
+	MembersType string `json:"members_type"`
+	TopicType   string `json:"topic_type"`
+	TopicName   string `json:"topic_name"`
+}
+
+type listenAPISender struct {
+	UID        string `json:"uid"`
+	Username   string `json:"username"`
+	DeviceID   string `json:"device_id"`
+	DeviceName string `json:"device_name"`
+}
+
+type listenAPIContent struct {
+	Type string        `json:"type"`
+	Text listenAPIText `json:"text,omitempty"`
+}
+
+type listenAPIText struct {
+	Body string `json:"body"`
+}
+
 // Take JSON string as input and send it to the chat API via the Keybase CLI
 func SendChatAPI(jsonData string) (chatAPIIn, error) {
 	cmd := exec.Command("keybase", "chat", "api", "-m", jsonData)
@@ -84,6 +124,13 @@ func SendChatAPI(jsonData string) (chatAPIIn, error) {
 	}
 
 	return retVal, nil
+}
+
+// Unmarshal message received from api-listen
+func ReceiveMessage(jsonString string) listenAPI {
+	var jsonData listenAPI
+	json.Unmarshal([]byte(jsonString), &jsonData)
+	return jsonData
 }
 
 // Send a message to a dev channel

@@ -1,10 +1,12 @@
 package main
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
 	"log"
 	"net/http"
+	"os/exec"
 	"strings"
 )
 
@@ -24,6 +26,14 @@ func init() {
 	flag.Parse()
 }
 
+func apiService() {
+	// Create a new router and start the rest API service
+	router := NewRouter()
+	log.Printf("Starting with instance name '%s'\n", instanceName)
+	serverAddress := fmt.Sprintf("%s:%d", serverHost, serverPort)
+	log.Fatal(http.ListenAndServe(serverAddress, router))
+}
+
 func main() {
 	// If -name flag isn't set, use device name from keybase
 	if instanceName == "" {
@@ -35,11 +45,25 @@ func main() {
 	// Create necessary dev channels on keybase if they're missing
 	CreateMissingChannels(instanceName)
 
-	// Create a new router and start the rest API service
-	router := NewRouter()
-	log.Printf("Starting with instance name '%s'\n", instanceName)
-	serverAddress := fmt.Sprintf("%s:%d", serverHost, serverPort)
-	log.Fatal(http.ListenAndServe(serverAddress, router))
+	go apiService()
+
+	// Monitor Keybase Chat API for messages
+	listener := exec.Command("keybase", "chat", "api-listen", "--dev")
+	listenerOutput, _ := listener.StdoutPipe()
+	listener.Start()
+	scanner := bufio.NewScanner(listenerOutput)
+	log.Println("Waiting for new messages...")
+	for scanner.Scan() {
+		newMessage := ReceiveMessage(scanner.Text())
+		msgSender := newMessage.Msg.Sender.Username
+		contentType := newMessage.Msg.Content.Type
+		topicType := newMessage.Msg.Channel.TopicType
+		channelName := newMessage.Msg.Channel.TopicName
+
+		if (msgSender == KeybaseUsername()) && (topicType == "dev") && (channelName == fmt.Sprintf("__%s_input", instanceName)) && (contentType == "text") {
+			fmt.Println(newMessage.Msg.Content.Text.Body)
+		}
+	}
 }
 
 // CreateMissingChannels will check if the queue and input 'dev' channels have
