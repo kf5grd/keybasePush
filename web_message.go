@@ -5,6 +5,7 @@ package main
 type Message struct {
 	Id      string `json:"id"`
 	Ack     *bool  `json:"ack,omitempty"`
+	Sender  string `json:"sender"`
 	Target  string `json:"target"`
 	Title   string `json:"title"`
 	Content string `json:"content"`

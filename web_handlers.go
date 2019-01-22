@@ -101,9 +101,12 @@ func MessageCreate(w http.ResponseWriter, r *http.Request) {
 	// Force target to lowercase
 	message.Target = strings.ToLower(message.Target)
 
+	// Attach instance name to message
+	message.Sender = strings.ToLower(instanceName)
+
 	m := RepoCreateMessage(message)
 
-	// Send message to input channel for each target
+	// Send message to input channel for target
 	user := KeybaseUsername()
 	channel := fmt.Sprintf("__%s_input", m.Target)
 	jsonBytes, _ := json.Marshal(m)
