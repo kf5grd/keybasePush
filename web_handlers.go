@@ -98,6 +98,9 @@ func MessageCreate(w http.ResponseWriter, r *http.Request) {
 		message.Ack = t
 	}
 
+	// Set message type
+	message.Type = "message"
+
 	// Force target to lowercase
 	message.Target = strings.ToLower(message.Target)
 
