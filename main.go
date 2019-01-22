@@ -78,6 +78,7 @@ func main() {
 
 				case "ack":
 					// message with type 'ack' received
+					RepoDestroyMessage(msg.Id)
 				}
 			}
 		}
