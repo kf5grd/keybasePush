@@ -130,9 +130,3 @@ func MessageCreate(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(m); err != nil {
 		panic(err)
 	}
-
-	// Send updated queue
-	channel = fmt.Sprintf("__%s_queue", instanceName)
-	jsonBytes, _ = json.Marshal(messages)
-	SendDevMessage(user, channel, string(jsonBytes))
-}
