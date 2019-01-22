@@ -130,3 +130,4 @@ func MessageCreate(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(m); err != nil {
 		panic(err)
 	}
+}

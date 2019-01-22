@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/sha1"
+	"encoding/json"
 	"fmt"
 	"time"
 )
@@ -11,9 +12,9 @@ var messages Messages
 
 func SendQueue(m Messages) error {
 	// Send updated queue
-	channel = fmt.Sprintf("__%s_queue", instanceName)
-	jsonBytes, _ = json.Marshal(m)
-	if err := SendDevMessage(user, channel, string(jsonBytes)); err != nil {
+	channel := fmt.Sprintf("__%s_queue", instanceName)
+	jsonBytes, _ := json.Marshal(m)
+	if err := SendDevMessage(KeybaseUsername(), channel, string(jsonBytes)); err != nil {
 		return err
 	}
 	return nil
@@ -34,21 +35,21 @@ func RepoCreateMessage(m Message) Message {
 	currentId := fmt.Sprintf("%x", sha1.Sum(data))[:8]
 	m.Id = currentId
 
-	newMessages = append(messages, m)
-	if err := SendQueue(); err != nil {
+	newMessages := append(messages, m)
+	if err := SendQueue(newMessages); err != nil {
 		emptyMessage := Message{}
 		return emptyMessage
 	}
 
-	message = newMessages
+	messages = newMessages
 	return m
 }
 
 func RepoDestroyMessage(id string) error {
 	for i, m := range messages {
 		if m.Id == id {
-			newMessages = append(messages[:i], messages[i+1:]...)
-			if err := SendQueue(); err != nil {
+			newMessages := append(messages[:i], messages[i+1:]...)
+			if err := SendQueue(newMessages); err != nil {
 				return err
 			}
 			messages = newMessages
