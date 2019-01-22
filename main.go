@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
@@ -61,9 +62,33 @@ func main() {
 		channelName := newMessage.Msg.Channel.TopicName
 
 		if (msgSender == KeybaseUsername()) && (topicType == "dev") && (channelName == fmt.Sprintf("__%s_input", instanceName)) && (contentType == "text") {
-			fmt.Println(newMessage.Msg.Content.Text.Body)
+			emptyMessage := Message{}
+			if msg := GetMessage(newMessage.Msg.Content.Text.Body); msg != emptyMessage {
+				switch msg.Type {
+
+				case "message":
+					// message with type 'message' received
+					fmt.Println(newMessage.Msg.Content.Text.Body)
+					if *msg.Ack {
+						// ack message
+						var jsonBytes []byte
+						jsonBytes, _ = json.Marshal(Message{Id: msg.Id, Type: "ack"})
+						SendDevMessage(KeybaseUsername(), fmt.Sprintf("__%s_input", msg.Sender), string(jsonBytes))
+					}
+
+				case "ack":
+					// message with type 'ack' received
+				}
+			}
 		}
 	}
+}
+
+// Get content from received message
+func GetMessage(jsonString string) Message {
+	var jsonData Message
+	json.Unmarshal([]byte(jsonString), &jsonData)
+	return jsonData
 }
 
 // CreateMissingChannels will check if the queue and input 'dev' channels have
