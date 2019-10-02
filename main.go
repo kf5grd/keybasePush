@@ -1,14 +1,14 @@
 package main
 
 import (
-	"bufio"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
 	"net/http"
-	"os/exec"
 	"strings"
+
+	"samhofi.us/x/keybase"
 )
 
 const (
@@ -19,6 +19,9 @@ const (
 // Initialize variables for flags
 var instanceName string
 var serverPort int
+
+// Keybase API
+var k = keybase.NewKeybase()
 
 func init() {
 	// Parse flags
@@ -38,58 +41,75 @@ func apiService() {
 func main() {
 	// If -name flag isn't set, use device name from keybase
 	if instanceName == "" {
-		instanceName = KeybaseDeviceName()
+		instanceName = k.Device
 	}
 	// Instance name forced to lowercase with no leading or trailing spaces
 	instanceName = strings.ToLower(instanceName)
 	instanceName = strings.TrimSpace(instanceName)
+
 	// Create necessary dev channels on keybase if they're missing
 	CreateMissingChannels(instanceName)
 
+	// Start Rest API
 	go apiService()
 
 	// Monitor Keybase Chat API for messages
-	listener := exec.Command("keybase", "chat", "api-listen", "--dev")
-	listenerOutput, _ := listener.StdoutPipe()
-	listener.Start()
-	scanner := bufio.NewScanner(listenerOutput)
+	kbChannels := []keybase.Channel{
+		keybase.Channel{
+			Name:      k.Username,
+			TopicType: keybase.DEV,
+			TopicName: fmt.Sprintf("__%s_input", instanceName),
+		},
+		keybase.Channel{
+			Name:      k.Username,
+			TopicType: keybase.DEV,
+			TopicName: fmt.Sprintf("__%s_queue", instanceName),
+		},
+	}
+	kbOpts := keybase.RunOptions{
+		Dev:            true,
+		FilterChannels: kbChannels,
+	}
 	log.Println("Waiting for new messages...")
-	for scanner.Scan() {
-		newMessage := ReceiveMessage(scanner.Text())
-		msgSender := newMessage.Msg.Sender.Username
-		contentType := newMessage.Msg.Content.Type
-		topicType := newMessage.Msg.Channel.TopicType
-		channelName := newMessage.Msg.Channel.TopicName
+	k.Run(handler, kbOpts)
+}
 
-		if (msgSender == KeybaseUsername()) && (topicType == "dev") && (channelName == fmt.Sprintf("__%s_input", instanceName)) && (contentType == "text") {
-			emptyMessage := Message{}
-			if msg := GetMessage(newMessage.Msg.Content.Text.Body); msg != emptyMessage {
-				switch msg.Type {
+func handler(m keybase.ChatAPI) {
+	if m.Msg.Content.Type != "text" {
+		return
+	}
+	msg, err := GetMessage(m.Msg.Content.Text.Body)
+	if err != nil {
+		return
+	}
 
-				case "message":
-					// message with type 'message' received
-					fmt.Println(newMessage.Msg.Content.Text.Body)
-					if *msg.Ack {
-						// ack message
-						var jsonBytes []byte
-						jsonBytes, _ = json.Marshal(Message{Id: msg.Id, Type: "ack"})
-						SendDevMessage(KeybaseUsername(), fmt.Sprintf("__%s_input", msg.Sender), string(jsonBytes))
-					}
+	chat := k.NewChat(m.Msg.Channel)
+	switch msg.Type {
 
-				case "ack":
-					// message with type 'ack' received
-					RepoDestroyMessage(msg.Id)
-				}
-			}
+	case "message":
+		// message with type 'message' received
+		fmt.Println(m.Msg.Content.Text.Body)
+		if *msg.Ack {
+			// ack message
+			var jsonBytes []byte
+			jsonBytes, _ = json.Marshal(Message{Id: msg.Id, Type: "ack"})
+			chat.Send(string(jsonBytes))
 		}
+
+	case "ack":
+		// message with type 'ack' received
+		RepoDestroyMessage(msg.Id)
 	}
 }
 
-// Get content from received message
-func GetMessage(jsonString string) Message {
-	var jsonData Message
-	json.Unmarshal([]byte(jsonString), &jsonData)
-	return jsonData
+// GetMessage gets content from received message
+func GetMessage(jsonString string) (Message, error) {
+	var result Message
+	err := json.Unmarshal([]byte(jsonString), &result)
+	if err != nil {
+		return result, err
+	}
+	return result, nil
 }
 
 // CreateMissingChannels will check if the queue and input 'dev' channels have
@@ -102,18 +122,47 @@ func CreateMissingChannels(instanceName string) {
 	}
 
 	// get existing dev channels
-	existingChannels := make(map[string]string)
-	for _, c := range GetDevChannels() {
-		existingChannels[c] = ""
+	existingChannels := make(map[string]bool)
+	devChannels, err := k.ChatList(keybase.Channel{
+		Name:      k.Username,
+		TopicType: keybase.DEV,
+	})
+	if err != nil {
+		log.Printf("Unable to get dev channels: %v", err)
+	} else {
+		for _, c := range devChannels.Result.Conversations {
+			if c.Channel.Name == k.Username {
+				existingChannels[c.Channel.TopicName] = true
+			}
+		}
 	}
 
 	// create any dev channel that's needed and doesn't exist yet
 	for _, devChan := range neededChannels {
 		if _, ok := existingChannels[devChan]; !ok {
 			log.Printf("Creating missing dev channel '%s'\n", devChan)
-			if err := CreateDevChannel(KeybaseUsername(), devChan); err != nil {
-				panic(err)
+			chat := k.NewChat(keybase.Channel{
+				Name:        k.Username,
+				MembersType: keybase.USER,
+				TopicName:   devChan,
+				TopicType:   keybase.DEV,
+			})
+			_, err := chat.Send(`{"create_channel": true}`)
+			if err != nil {
+				log.Fatal(err)
 			}
 		}
 	}
+}
+
+func SendMessage(channel string, message string) error {
+	ch := keybase.Channel{
+		Name:        k.Username,
+		MembersType: keybase.USER,
+		TopicName:   channel,
+		TopicType:   keybase.DEV,
+	}
+	chat := k.NewChat(ch)
+	_, err := chat.Send(message)
+	return err
 }

@@ -14,7 +14,7 @@ func SendQueue(m Messages) error {
 	// Send updated queue
 	channel := fmt.Sprintf("__%s_queue", instanceName)
 	jsonBytes, _ := json.Marshal(m)
-	if err := SendDevMessage(KeybaseUsername(), channel, string(jsonBytes)); err != nil {
+	if err := SendMessage(channel, string(jsonBytes)); err != nil {
 		return err
 	}
 	return nil

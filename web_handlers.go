@@ -110,10 +110,9 @@ func MessageCreate(w http.ResponseWriter, r *http.Request) {
 	m := RepoCreateMessage(message)
 
 	// Send message to input channel for target
-	user := KeybaseUsername()
 	channel := fmt.Sprintf("__%s_input", m.Target)
 	jsonBytes, _ := json.Marshal(m)
-	if err := SendDevMessage(user, channel, string(jsonBytes)); err != nil {
+	if err := SendMessage(channel, string(jsonBytes)); err != nil {
 		// delete message
 		RepoDestroyMessage(m.Id)
 
