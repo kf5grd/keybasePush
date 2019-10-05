@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strings"
 
 	"samhofi.us/x/keybase"
 )
@@ -72,4 +73,16 @@ func sendMessage(channel string, msg string) error {
 	chat := k.NewChat(ch)
 	_, err := chat.Send(msg)
 	return err
+}
+
+func registerEventCommand(c eventCommand) {
+	for _, t := range c.Events {
+		t = strings.ToLower(t)
+		if _, ok := eventCommands[t]; !ok {
+			eventCommands[t] = c
+			log.Printf(`EventCommand "%s" registered trigger "%s"`, c.Name, t)
+			continue
+		}
+		log.Printf(`EventCommand "%s" could not register trigger "%s" because this trigger is already registered`, c.Name, t)
+	}
 }

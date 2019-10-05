@@ -23,6 +23,9 @@ var serverPort int
 // Keybase API
 var k = keybase.NewKeybase()
 
+// Event Commands
+var eventCommands = make(map[string]eventCommand)
+
 func init() {
 	// Parse flags
 	flag.StringVar(&instanceName, "name", "", "Set the name of this instance")
@@ -82,15 +85,23 @@ func handler(m keybase.ChatAPI) {
 	if err != nil {
 		return
 	}
+	log.Printf("Incoming message ID: %s", msg.ID)
 
 	chat := k.NewChat(m.Msg.Channel)
 	switch msg.Type {
 
 	case "message":
 		// message with type 'message' received
-		fmt.Println(m.Msg.Content.Text.Body)
+		if event, ok := eventCommands[msg.Event]; ok {
+			log.Printf("Message %s triggers eventCommand %s", msg.ID, event.Name)
+			event.Exec(msg)
+		} else {
+			fmt.Println(m.Msg.Content.Text.Body)
+		}
+
 		if *msg.Ack {
 			// ack message
+			log.Printf("Acking message %s", msg.ID)
 			var jsonBytes []byte
 			jsonBytes, _ = json.Marshal(message{ID: msg.ID, Type: "ack"})
 			chat.Send(string(jsonBytes))
@@ -98,6 +109,7 @@ func handler(m keybase.ChatAPI) {
 
 	case "ack":
 		// message with type 'ack' received
+		log.Printf("Ack for message %s received", msg.ID)
 		repoDestroyMessage(msg.ID)
 	}
 }

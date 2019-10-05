@@ -12,3 +12,10 @@ type message struct {
 	Content string `json:"content,omitempty"`
 	Event   string `json:"event,omitempty"`
 }
+
+// eventCommand holds a command that can be triggered by messages with certain events
+type eventCommand struct {
+	Name   string        // name to use when referencing this command in logs
+	Events []string      // events that will trigger this command
+	Exec   func(message) // function to execute when this command is triggered
+}
