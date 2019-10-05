@@ -1,9 +1,9 @@
 package main
 
-// A Message struct will be marshaled into JSON data to be sent to the target
+// A message struct will be marshaled into JSON data to be sent to the target
 // node
-type Message struct {
-	Id      string `json:"id"`
+type message struct {
+	ID      string `json:"id"`
 	Type    string `json:"type"` // 'message' or 'ack'
 	Ack     *bool  `json:"ack,omitempty"`
 	Sender  string `json:"sender,omitempty"`
@@ -12,7 +12,3 @@ type Message struct {
 	Content string `json:"content,omitempty"`
 	Event   string `json:"event,omitempty"`
 }
-
-// Messages will be a slice of Message structs. This will be used as a queue
-// of messages
-type Messages []Message

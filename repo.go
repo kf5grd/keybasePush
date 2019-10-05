@@ -7,37 +7,37 @@ import (
 	"time"
 )
 
-var messageId string
-var messages Messages
+var messageID string
+var messages []message
 
-func SendQueue(m Messages) error {
+func sendQueue(m []message) error {
 	// Send updated queue
 	channel := fmt.Sprintf("__%s_queue", instanceName)
 	jsonBytes, _ := json.Marshal(m)
-	if err := SendMessage(channel, string(jsonBytes)); err != nil {
+	if err := sendMessage(channel, string(jsonBytes)); err != nil {
 		return err
 	}
 	return nil
 }
 
-func RepoFindMessage(id string) Message {
+func repoFindMessage(id string) message {
 	for _, m := range messages {
-		if m.Id == id {
+		if m.ID == id {
 			return m
 		}
 	}
 	// return empty message if not found
-	return Message{}
+	return message{}
 }
 
-func RepoCreateMessage(m Message) Message {
+func repoCreateMessage(m message) message {
 	data := []byte(fmt.Sprintf("%s%s", time.Now(), m.Content))
-	currentId := fmt.Sprintf("%x", sha1.Sum(data))[:8]
-	m.Id = currentId
+	currentID := fmt.Sprintf("%x", sha1.Sum(data))[:8]
+	m.ID = currentID
 
 	newMessages := append(messages, m)
-	if err := SendQueue(newMessages); err != nil {
-		emptyMessage := Message{}
+	if err := sendQueue(newMessages); err != nil {
+		emptyMessage := message{}
 		return emptyMessage
 	}
 
@@ -45,11 +45,11 @@ func RepoCreateMessage(m Message) Message {
 	return m
 }
 
-func RepoDestroyMessage(id string) error {
+func repoDestroyMessage(id string) error {
 	for i, m := range messages {
-		if m.Id == id {
+		if m.ID == id {
 			newMessages := append(messages[:i], messages[i+1:]...)
-			if err := SendQueue(newMessages); err != nil {
+			if err := sendQueue(newMessages); err != nil {
 				return err
 			}
 			messages = newMessages

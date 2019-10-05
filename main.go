@@ -32,7 +32,7 @@ func init() {
 
 func apiService() {
 	// Create a new router and start the rest API service
-	router := NewRouter()
+	router := newRouter()
 	log.Printf("Starting with instance name '%s'\n", instanceName)
 	serverAddress := fmt.Sprintf("%s:%d", serverHost, serverPort)
 	log.Fatal(http.ListenAndServe(serverAddress, router))
@@ -48,7 +48,7 @@ func main() {
 	instanceName = strings.TrimSpace(instanceName)
 
 	// Create necessary dev channels on keybase if they're missing
-	CreateMissingChannels(instanceName)
+	createMissingChannels(instanceName)
 
 	// Start Rest API
 	go apiService()
@@ -78,7 +78,7 @@ func handler(m keybase.ChatAPI) {
 	if m.Msg.Content.Type != "text" {
 		return
 	}
-	msg, err := GetMessage(m.Msg.Content.Text.Body)
+	msg, err := getMessage(m.Msg.Content.Text.Body)
 	if err != nil {
 		return
 	}
@@ -92,19 +92,19 @@ func handler(m keybase.ChatAPI) {
 		if *msg.Ack {
 			// ack message
 			var jsonBytes []byte
-			jsonBytes, _ = json.Marshal(Message{Id: msg.Id, Type: "ack"})
+			jsonBytes, _ = json.Marshal(message{ID: msg.ID, Type: "ack"})
 			chat.Send(string(jsonBytes))
 		}
 
 	case "ack":
 		// message with type 'ack' received
-		RepoDestroyMessage(msg.Id)
+		repoDestroyMessage(msg.ID)
 	}
 }
 
-// GetMessage gets content from received message
-func GetMessage(jsonString string) (Message, error) {
-	var result Message
+// getMessage gets content from received message
+func getMessage(jsonString string) (message, error) {
+	var result message
 	err := json.Unmarshal([]byte(jsonString), &result)
 	if err != nil {
 		return result, err
@@ -112,9 +112,9 @@ func GetMessage(jsonString string) (Message, error) {
 	return result, nil
 }
 
-// CreateMissingChannels will check if the queue and input 'dev' channels have
+// createMissingChannels will check if the queue and input 'dev' channels have
 // already been created on keybase, and if not, it will create them
-func CreateMissingChannels(instanceName string) {
+func createMissingChannels(instanceName string) {
 	// need queue and input channels
 	neededChannels := []string{
 		fmt.Sprintf("__%s_queue", instanceName),
@@ -155,7 +155,7 @@ func CreateMissingChannels(instanceName string) {
 	}
 }
 
-func SendMessage(channel string, message string) error {
+func sendMessage(channel string, msg string) error {
 	ch := keybase.Channel{
 		Name:        k.Username,
 		MembersType: keybase.USER,
@@ -163,6 +163,6 @@ func SendMessage(channel string, message string) error {
 		TopicType:   keybase.DEV,
 	}
 	chat := k.NewChat(ch)
-	_, err := chat.Send(message)
+	_, err := chat.Send(msg)
 	return err
 }
