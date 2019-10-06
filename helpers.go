@@ -22,6 +22,10 @@ func getMessage(jsonString string) (message, error) {
 // createMissingChannels will check if the queue and input 'dev' channels have
 // already been created on keybase, and if not, it will create them
 func createMissingChannels(instanceName string) {
+	defer wg.Done()
+
+	log.Print("Checking for missing dev channels...")
+
 	// need queue and input channels
 	neededChannels := []string{
 		fmt.Sprintf("__%s_queue", instanceName),
@@ -31,8 +35,9 @@ func createMissingChannels(instanceName string) {
 	// get existing dev channels
 	existingChannels := make(map[string]bool)
 	devChannels, err := k.ChatList(keybase.Channel{
-		Name:      k.Username,
-		TopicType: keybase.DEV,
+		Name:        k.Username,
+		MembersType: keybase.USER,
+		TopicType:   keybase.DEV,
 	})
 	if err != nil {
 		log.Printf("Unable to get dev channels: %v", err)

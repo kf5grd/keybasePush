@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"sync"
 
 	"samhofi.us/x/keybase"
 )
@@ -26,6 +27,8 @@ var k = keybase.NewKeybase()
 // Event Commands
 var eventCommands = make(map[string]eventCommand)
 
+var wg sync.WaitGroup
+
 func init() {
 	// Parse flags
 	flag.StringVar(&instanceName, "name", "", "Set the name of this instance")
@@ -35,8 +38,8 @@ func init() {
 
 func apiService() {
 	// Create a new router and start the rest API service
+	log.Printf("Starting web service")
 	router := newRouter()
-	log.Printf("Starting with instance name '%s'\n", instanceName)
 	serverAddress := fmt.Sprintf("%s:%d", serverHost, serverPort)
 	log.Fatal(http.ListenAndServe(serverAddress, router))
 }
@@ -50,8 +53,11 @@ func main() {
 	instanceName = strings.ToLower(instanceName)
 	instanceName = strings.TrimSpace(instanceName)
 
+	log.Printf("Starting with instance name '%s'\n", instanceName)
+
 	// Create necessary dev channels on keybase if they're missing
-	createMissingChannels(instanceName)
+	wg.Add(1)
+	go createMissingChannels(instanceName)
 
 	// Start Rest API
 	go apiService()
@@ -73,6 +79,7 @@ func main() {
 		Dev:            true,
 		FilterChannels: kbChannels,
 	}
+	wg.Wait()
 	log.Println("Waiting for new messages...")
 	k.Run(handler, kbOpts)
 }
