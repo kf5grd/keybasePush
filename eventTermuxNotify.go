@@ -8,13 +8,13 @@ import (
 )
 
 func init() {
-	registerEventCommand(command)
-}
+	var command = eventCommand{
+		Name:   "TermuxNotify",
+		Events: []string{"notify"},
+		Exec:   eventTermuxNotify,
+	}
 
-var command = eventCommand{
-	Name:   "TermuxNotify",
-	Events: []string{"notify"},
-	Exec:   eventTermuxNotify,
+	registerEventCommand(command)
 }
 
 func eventTermuxNotify(m message) {
