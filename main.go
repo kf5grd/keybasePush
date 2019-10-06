@@ -87,7 +87,6 @@ func handler(m keybase.ChatAPI) {
 	}
 	log.Printf("Incoming message ID: %s", msg.ID)
 
-	chat := k.NewChat(m.Msg.Channel)
 	switch msg.Type {
 
 	case "message":
@@ -104,7 +103,7 @@ func handler(m keybase.ChatAPI) {
 			log.Printf("Acking message %s", msg.ID)
 			var jsonBytes []byte
 			jsonBytes, _ = json.Marshal(message{ID: msg.ID, Type: "ack"})
-			chat.Send(string(jsonBytes))
+			sendMessage(fmt.Sprintf("__%s_input", msg.Sender), string(jsonBytes))
 		}
 
 	case "ack":
