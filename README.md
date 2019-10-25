@@ -37,7 +37,6 @@ To start keybasePush when your phone boots, make sure you have the [Termux:Boot]
 
 ```bash
 #!/data/data/com.termux/files/usr/bin/sh
-termux-wake-lock
 $HOME/go/bin/keybasePush -name phone 1> /dev/null 2>> $HOME/keybasePush.log
 ```
 
