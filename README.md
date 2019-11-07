@@ -20,7 +20,7 @@ keybasePush _should_ run on several different platforms, though I haven't tested
 
 I will refer to each machine running keybasePush as a 'node'.
 
-Each node needs to also have Keybase running and logged in. Each node will have a name that you can reference when sending a push to that node. By default, the name of a node will be it's Keybase device name. If you want to specify a different name, you can pass the `-name` flag.
+Each node needs to also have Keybase running and logged in. Each node will have a name that you can reference when sending a push to that node. By default, the name of a node will be its Keybase device name. If you want to specify a different name, you can pass the `-name` flag.
 
 Each node will also run a small webserver with a Rest API, which is how you will push messages to other nodes. The default port is 8617, but you can specify a different port by passing the `-port` flag.
 
@@ -37,11 +37,11 @@ To start keybasePush when your phone boots, make sure you have the [Termux:Boot]
 
 ```bash
 #!/data/data/com.termux/files/usr/bin/sh
-$HOME/go/bin/keybasePush -name phone 1> /dev/null 2>> $HOME/keybasePush.log
+$HOME/go/bin/keybasePush 1> /dev/null 2>> $HOME/keybasePush.log
 ```
 
 
-Note: This assumer your `$GOPATH` is at `$HOME/go`. If it's not, or if you've placed the keybasePush binary somewhere else, then you will need to make the appropriate adjustments.
+Note: This assumes your `$GOPATH` is at `$HOME/go`. If it's not, or if you've placed the keybasePush binary somewhere else, then you will need to make the appropriate adjustments.
 
 
 ## Sending a Push
@@ -65,13 +65,13 @@ $ curl -H "Content-Type: application/json" -d '{"title":"Hello","content":"Hello
 ```
 
 ### Example 2: Events
-You can specify an event, which can trigger an action on the recieving node. At the time of this writing (and hopefully I won't forget to update the readme in the future!) the only establisheb event commands are available when running on Termux. You can pass any event you want, but if there's no registered command for the event, it will only print to stdout on the target node, just like the other basic commands.
+You can specify an event, which can trigger an action on the recieving node. At the time of this writing (and hopefully I won't forget to update the readme in the future!) the only established event commands are available when running on Termux. You can pass any event you want, but if there's no registered command for the event, it will only print to stdout on the target node, just like the other basic commands.
 
 
 There are currently 3 registered events: `torch`, `openurl`, and `notify`:
 
 - `torch` will turn on the phone's flashlight when the `content` field is set to `on`, and will turn the flashlight off when the `content` field is set to `off`
-- `openurl` will open a url passed in the `content` field using the phones default browser
+- `openurl` will open a url passed in the `content` field using the phone's default browser
 - `notify` will create a notification with the title being the value passed in the push's `title` field, and the body being the value passed in the push's `content` field
 
 
