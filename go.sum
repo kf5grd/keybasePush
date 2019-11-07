@@ -1,0 +1,4 @@
+github.com/gorilla/mux v1.7.3 h1:gnP5JzjVOuiZD07fKKToCAOjS0yOpj/qPETTXCCS6hw=
+github.com/gorilla/mux v1.7.3/go.mod h1:1lud6UwP+6orDFRuTfBEV8e9/aOM/c4fVVCaMa2zaAs=
+samhofi.us/x/keybase v0.0.0-20191104131919-b247e10f1b40 h1:b4TBQAxey0RePCCKkot3PaWkH/z7JnwxwnGeKbxY/hE=
+samhofi.us/x/keybase v0.0.0-20191104131919-b247e10f1b40/go.mod h1:fcva80IUFyWcHtV4bBSzgKg07K6Rvuvi3GtGCLNGkyE=
